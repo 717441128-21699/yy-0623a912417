@@ -1,4 +1,4 @@
-import type { Batch, TemperatureCurve, Certificate, DisposalRecord } from '@/types'
+import type { Batch, TemperatureCurve, TemperatureReading, Certificate, DisposalRecord } from '@/types'
 
 export const CARGO_CATEGORIES = [
   '冷冻肉类',
@@ -29,22 +29,24 @@ export const DESTINATION_PORTS = [
   '青岛前湾港',
 ]
 
-function generateReadings(
+export function generateTemperatureCurve(
   batchId: string,
   hours: number,
   minTemp: number,
   maxTemp: number,
-  hasOverLimit: boolean
+  hasOverLimit: boolean = false
 ): TemperatureCurve {
-  const readings = []
+  const readings: TemperatureReading[] = []
   const now = new Date()
   const startTime = new Date(now.getTime() - hours * 60 * 60 * 1000)
   const midTemp = (minTemp + maxTemp) / 2
   const range = maxTemp - minTemp
+  const sampleIntervalMinutes = 10
+  const totalSamples = Math.floor((hours * 60) / sampleIntervalMinutes)
 
-  for (let i = 0; i < hours * 6; i++) {
-    const t = new Date(startTime.getTime() + i * 10 * 60 * 1000)
-    const progress = i / (hours * 6)
+  for (let i = 0; i < totalSamples; i++) {
+    const t = new Date(startTime.getTime() + i * sampleIntervalMinutes * 60 * 1000)
+    const progress = i / totalSamples
     let vehicleBase = midTemp + (Math.sin(progress * Math.PI * 4) * range * 0.3)
     let cabinBase = midTemp + (Math.sin(progress * Math.PI * 3 + 0.5) * range * 0.25)
 
@@ -222,7 +224,7 @@ export const MOCK_BATCHES: Batch[] = [
 ]
 
 export const MOCK_CURVES: TemperatureCurve[] = MOCK_BATCHES.map((b) =>
-  generateReadings(b.id, 72, b.tempRangeMin, b.tempRangeMax, b.isOverLimit)
+  generateTemperatureCurve(b.id, 72, b.tempRangeMin, b.tempRangeMax, b.isOverLimit)
 )
 
 export const MOCK_CERTIFICATES: Certificate[] = [

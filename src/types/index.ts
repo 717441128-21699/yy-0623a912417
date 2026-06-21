@@ -53,6 +53,7 @@ export interface DisposalRecord {
   notifyDriverAt: string | null
   resolvedAt: string | null
   status: 'pending' | 'notified' | 'resolved'
+  resultNote?: string
 }
 
 export type BatchStatus = Batch['status']
